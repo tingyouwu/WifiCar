@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin">
+
+    <ImageButton
+        android:id="@+id/btnstop"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
+        android:layout_centerInParent="true"
+        android:layout_margin="30dp"
+        android:background="@mipmap/stop"
+        android:padding="50dp" />
+
+    <ImageButton
+        android:id="@+id/btnleft"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
+        android:layout_toLeftOf="@+id/btnstop"
+        android:layout_alignTop="@+id/btnstop"
+        android:background="@mipmap/left" />
+
+    <ImageButton
+        android:id="@+id/btnright"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
+        android:layout_toRightOf="@+id/btnstop"
+        android:layout_alignTop="@+id/btnstop"
+        android:background="@mipmap/right" />
+
+    <ImageButton
+        android:id="@+id/btnback"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
+        android:layout_below="@+id/btnstop"
+        android:layout_alignLeft="@+id/btnstop"
+        android:background="@mipmap/back" />
+
+    <ImageButton
+        android:id="@+id/btngo"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
+        android:layout_above="@+id/btnstop"
+        android:layout_alignLeft="@+id/btnstop"
+        android:background="@mipmap/up" />
+
+    <TextView
+        android:id="@+id/tv_setting"
+        android:layout_width="80dp"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:text="设置自定义编码"
+        android:textColor="@color/alpha_black"
+        android:textSize="16sp"
+        />
+
+</RelativeLayout>
