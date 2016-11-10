@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/bg_login">
+
+    <Button
+        android:id="@+id/btn_connect"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:background="@drawable/login_press"
+        android:gravity="center"
+        android:padding="8dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:text="老司机发车，点击连接小车"
+        android:textColor="@color/white"
+        android:layout_marginBottom="10dp"
+        android:textSize="16sp" />
+
+</RelativeLayout>

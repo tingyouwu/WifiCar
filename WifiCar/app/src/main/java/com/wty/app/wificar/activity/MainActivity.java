@@ -8,23 +8,13 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import com.wty.app.wificar.R;
+import com.wty.app.wificar.util.PreferenceUtil;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private ImageButton btngo,btnstop,btnleft,btnright,btnback;
     TextView tv_setting;
-
-    private String upCode="1";
-    private String backCode="2";
-    private String leftCode="3";
-    private String rightCode="4";
-    private String stopCode="0";
-
-    private static final int REQUEST_CONNECT_DEVICE = 1;
-    private static final int REQUEST_ENABLE_BT = 2;
-
-    private String mConnectedDeviceName = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,12 +45,12 @@ public class MainActivity extends AppCompatActivity {
                 switch (action) {
                     case MotionEvent.ACTION_DOWN:
                         btngo.setBackgroundResource(R.mipmap.up_press);
-                        sendMessage(upCode);
+                        sendMessage(PreferenceUtil.getInstance().getUpCode());
                         break;
 
                     case MotionEvent.ACTION_UP:
                         btngo.setBackgroundResource(R.mipmap.up);
-                        sendMessage(stopCode);
+                        sendMessage(PreferenceUtil.getInstance().getStopCode());
                         break;
                 }
                 return false;
@@ -74,11 +64,11 @@ public class MainActivity extends AppCompatActivity {
                 switch (action) {
                     case MotionEvent.ACTION_DOWN:
                         btnleft.setBackgroundResource(R.mipmap.left_press);
-                        sendMessage(leftCode);
+                        sendMessage(PreferenceUtil.getInstance().getLeftCode());
                         break;
                     case MotionEvent.ACTION_UP:
                         btnleft.setBackgroundResource(R.mipmap.left);
-                        sendMessage(stopCode);
+                        sendMessage(PreferenceUtil.getInstance().getStopCode());
                         break;
                 }
                 return false;
@@ -92,12 +82,12 @@ public class MainActivity extends AppCompatActivity {
                 switch (action) {
                     case MotionEvent.ACTION_DOWN:
                         btnright.setBackgroundResource(R.mipmap.right_press);
-                        sendMessage(rightCode);
+                        sendMessage(PreferenceUtil.getInstance().getRightCode());
                         break;
 
                     case MotionEvent.ACTION_UP:
                         btnright.setBackgroundResource(R.mipmap.right);
-                        sendMessage(stopCode);
+                        sendMessage(PreferenceUtil.getInstance().getStopCode());
                         break;
                 }
                 return false;
@@ -111,12 +101,12 @@ public class MainActivity extends AppCompatActivity {
                 switch (action) {
                     case MotionEvent.ACTION_DOWN:
                         btnback.setBackgroundResource(R.mipmap.back_press);
-                        sendMessage(backCode);
+                        sendMessage(PreferenceUtil.getInstance().getDownCode());
                         break;
 
                     case MotionEvent.ACTION_UP:
                         btnback.setBackgroundResource(R.mipmap.back);
-                        sendMessage(stopCode);
+                        sendMessage(PreferenceUtil.getInstance().getStopCode());
                         break;
                 }
                 return false;
@@ -126,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
         btnstop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendMessage(stopCode);
+                sendMessage(PreferenceUtil.getInstance().getStopCode());
             }
         });
 
@@ -144,6 +134,8 @@ public class MainActivity extends AppCompatActivity {
      * @param message A string of text to send.
      */
     private void sendMessage(String message) {
-
+        if(message.length()>0){
+            byte[] send = message.getBytes();
+        }
     }
 }

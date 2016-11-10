@@ -9,6 +9,6 @@
 
     <!-- 设置矩形的四个角为弧形 -->
     <!-- android:radius 弧形的半径 -->
-    <corners android:radius="3dip" />
+    <corners android:radius="20dip" />
 
 </shape>
