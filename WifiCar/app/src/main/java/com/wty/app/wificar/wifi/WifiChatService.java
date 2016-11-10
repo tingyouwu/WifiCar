@@ -1,11 +1,13 @@
 package com.wty.app.wificar.wifi;
 
+import android.util.Log;
 import com.wty.app.wificar.base.Constant;
 import com.wty.app.wificar.event.RefreshEvent;
-
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -18,9 +20,13 @@ public class WifiChatService{
 
 	private static final String TAG = "WifiChatService";
 	private static volatile WifiChatService sInstance = new WifiChatService();
+	public static final int STATE_NONE = 0;       // we're doing nothing
+	public static final int STATE_CONNECTING = 1; // now initiating an outgoing connection 监听发送出去的连接
+	public static final int STATE_CONNECTED = 2;  // now connected to a remote device 已经连接的监听
 
 	private ConnectThread mConnectThread;//监听连接过程的线程
 	private ConnectedThread mConnectedThread;//监听通信过程的线程
+	private int mState; //记录当前连接状态
 
 	/**
 	 * 单例模式，获取instance实例
@@ -31,7 +37,93 @@ public class WifiChatService{
 	}
 
 	private WifiChatService(){
+		mState = STATE_NONE;
+	}
 
+	/**
+	 * 尝试连接到wifi小车
+	 **/
+	public synchronized void start() {
+		if (mConnectThread != null) {mConnectThread.cancel(); mConnectThread = null;}
+		if (mConnectedThread != null) {mConnectedThread.cancel(); mConnectedThread = null;}
+		mConnectThread = new ConnectThread();
+		mConnectThread.start();
+		setState(STATE_CONNECTING);
+	}
+
+	/**
+	 * Stop all threads
+	 */
+	public synchronized void stop() {
+		if (mConnectThread != null) {mConnectThread.cancel(); mConnectThread = null;}
+		if (mConnectedThread != null) {mConnectedThread.cancel(); mConnectedThread = null;}
+		setState(STATE_NONE);
+	}
+
+	/**
+	 * 连接失败，通知UI
+	 */
+	private void connectionFailed() {
+		setState(STATE_NONE);
+		EventBus.getDefault().post(new RefreshEvent(Constant.Connect_Fail));
+	}
+
+	/**
+	 * 连接成功，通知UI
+	 **/
+	private void connectionSuccess() {
+		setState(STATE_CONNECTED);
+		EventBus.getDefault().post(new RefreshEvent(Constant.Connect_Success));
+	}
+
+	/**
+	 * 连接断开，通知UI
+	 */
+	private void connectionLost() {
+		setState(STATE_NONE);
+		EventBus.getDefault().post(new RefreshEvent(Constant.Connect_Lost));
+	}
+
+	/**
+	 * 连接上wifi小车，启动监听通信线程
+	 **/
+	public synchronized void connected(Socket socket) {
+		if (mConnectThread != null) {mConnectThread.cancel(); mConnectThread = null;}
+		if (mConnectedThread != null) {mConnectedThread.cancel(); mConnectedThread = null;}
+		mConnectedThread = new ConnectedThread(socket);
+		mConnectedThread.start();
+		connectionSuccess();
+	}
+
+	/**
+	 * 设置状态
+	 **/
+	private synchronized void setState(int state) {
+		mState = state;
+	}
+
+	/**
+	 *  获取当前连接状态
+	 **/
+	public synchronized int getState() {
+		return mState;
+	}
+
+	/**
+	 * Write to the ConnectedThread in an unsynchronized manner
+	 * @param out The bytes to write
+	 * @see ConnectedThread#write(byte[])
+	 */
+	public void write(byte[] out) {
+		// Create temporary object
+		ConnectedThread r;
+		// Synchronize a copy of the ConnectedThread
+		synchronized (this) {
+			if (mState != STATE_CONNECTED) return;
+			r = mConnectedThread;
+		}
+		// Perform the write unsynchronized
+		r.write(out);
 	}
 
 	/**
@@ -49,11 +141,34 @@ public class WifiChatService{
 						Constant.PORT);// IP和端口号
 				//阻塞等待连接
 				mSocket.connect(socketAddress, Constant.TIMEOUT);
-				EventBus.getDefault().post(new RefreshEvent(Constant.Connect_Success));
 			} catch (IOException e) {
-				EventBus.getDefault().post(new RefreshEvent(Constant.Connect_Fail));
+				connectionFailed();
+				//关闭socket
+				try {
+					mSocket.close();
+				} catch (IOException e1) {
+					Log.e(TAG, "unable to close() socket during connection failure", e1);
+				}
+				return;
+			}
+
+			synchronized (WifiChatService.this) {
+				mConnectThread = null;
+			}
+
+			//启动连接成功线程监听通信过程
+			connected(mSocket);
+		}
+
+		public void cancel(){
+			try {
+				if(mSocket != null)
+					mSocket.close();
+			} catch (IOException e) {
+				Log.e(TAG, "close() of connect socket failed", e);
 			}
 		}
+
 	}
 
 	/**
@@ -61,9 +176,66 @@ public class WifiChatService{
 	 **/
 	private class ConnectedThread extends Thread {
 
+		private final Socket mmSocket;
+		private final InputStream mmInStream;
+		private final OutputStream mmOutStream;
+
+		public ConnectedThread(Socket socket){
+			mmSocket = socket;
+			InputStream tmpIn = null;
+			OutputStream tmpOut = null;
+
+			// Get the BluetoothSocket input and output streams
+			try {
+				tmpIn = socket.getInputStream();
+				tmpOut = socket.getOutputStream();
+			} catch (IOException e) {
+				Log.e(TAG, "temp sockets not created", e);
+			}
+			mmInStream = tmpIn;
+			mmOutStream = tmpOut;
+		}
+
 		@Override
 		public void run() {
+			byte[] buffer = new byte[1024];
+			int bytes;
+			while (true) {
+				try {
+					// 读取输入流
+					bytes = mmInStream.read(buffer);
+					Log.d(TAG, "wutingyou 收到数据");
+					if(bytes>0){
+						EventBus.getDefault().post(new RefreshEvent(new String(buffer,0,bytes)));
+					}
+				} catch (IOException e) {
+					Log.e(TAG, "disconnected", e);
+					connectionLost();
+					break;
+				}
+			}
+		}
 
+		/**
+		 * Write to the connected OutStream.
+		 * @param buffer  The bytes to write
+		 */
+		public void write(byte[] buffer) {
+			try {
+				mmOutStream.write(buffer);
+				// Share the sent message back to the UI Activity
+				EventBus.getDefault().post(new RefreshEvent(new String(buffer)));
+			} catch (IOException e) {
+				Log.e(TAG, "Exception during write", e);
+			}
+		}
+
+		public void cancel() {
+			try {
+				mmSocket.close();
+			} catch (IOException e) {
+				Log.e(TAG, "close() of connect socket failed", e);
+			}
 		}
 	}
 
