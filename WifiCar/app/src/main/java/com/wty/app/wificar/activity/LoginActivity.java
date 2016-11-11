@@ -1,6 +1,7 @@
 package com.wty.app.wificar.activity;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -25,8 +26,9 @@ public class LoginActivity extends AppCompatActivity {
     ProgressDialog progressDialog;
     ImageButton imageButton_setting;
 
-    public static void startLoginActivity(){
-        
+    public static void startLoginActivity(Context context){
+        Intent intent = new Intent(context, LoginActivity.class);
+        context.startActivity(intent);
     }
 
     @Override

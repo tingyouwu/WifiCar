@@ -1,5 +1,7 @@
 package com.wty.app.wificar.activity;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -47,6 +49,11 @@ public class NetWorkSetttingActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public static void startNetWorkSetttingActivity(Context context){
+        Intent intent = new Intent(context, NetWorkSetttingActivity.class);
+        context.startActivity(intent);
     }
 
     /**

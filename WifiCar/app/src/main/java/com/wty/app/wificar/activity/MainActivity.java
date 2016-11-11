@@ -1,5 +1,6 @@
 package com.wty.app.wificar.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -47,6 +48,11 @@ public class MainActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
+    }
+
+    public static void startMainActivity(Context context){
+        Intent intent = new Intent(context, MainActivity.class);
+        context.startActivity(intent);
     }
 
     @Subscribe
