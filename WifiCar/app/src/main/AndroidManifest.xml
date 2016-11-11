@@ -30,6 +30,11 @@
             android:screenOrientation="portrait"/>
 
         <activity
+            android:name=".activity.NetWorkSetttingActivity"
+            android:theme="@style/AppTheme"
+            android:screenOrientation="portrait"/>
+
+        <activity
             android:name=".activity.MainActivity"
             android:screenOrientation="landscape"/>
 

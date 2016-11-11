@@ -17,6 +17,8 @@ public class PreferenceUtil {
 	public static String UP_CODE = "up";//
 	public static String DOWN_CODE = "down";//
 	public static String STOP_CODE = "stop";//
+	public static String IP = "ip";//ip地址
+	public static String PORT = "port";//端口
 
 	private SharedPreferences mSharedPreferences;
 
@@ -66,6 +68,14 @@ public class PreferenceUtil {
 
 	public String getStopCode() {
 		return mSharedPreferences.getString(STOP_CODE,"0");
+	}
+
+	public String getIP(){
+		return mSharedPreferences.getString(IP,"192.168.4.1");
+	}
+
+	public int getPort(){
+		return mSharedPreferences.getInt(PORT,8888);
 	}
 
 	/**

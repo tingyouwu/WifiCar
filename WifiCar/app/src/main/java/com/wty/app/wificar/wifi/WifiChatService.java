@@ -3,6 +3,8 @@ package com.wty.app.wificar.wifi;
 import android.util.Log;
 import com.wty.app.wificar.base.Constant;
 import com.wty.app.wificar.event.RefreshEvent;
+import com.wty.app.wificar.util.PreferenceUtil;
+
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
@@ -27,6 +29,7 @@ public class WifiChatService{
 	private ConnectThread mConnectThread;//监听连接过程的线程
 	private ConnectedThread mConnectedThread;//监听通信过程的线程
 	private int mState; //记录当前连接状态
+	Socket mSocket = null;
 
 	/**
 	 * 单例模式，获取instance实例
@@ -44,7 +47,7 @@ public class WifiChatService{
 	 * 尝试连接到wifi小车
 	 **/
 	public synchronized void start() {
-		if (mConnectThread != null) {mConnectThread.cancel(); mConnectThread = null;}
+		if (mConnectThread != null) {mConnectThread = null;}
 		if (mConnectedThread != null) {mConnectedThread.cancel(); mConnectedThread = null;}
 		mConnectThread = new ConnectThread();
 		mConnectThread.start();
@@ -55,7 +58,7 @@ public class WifiChatService{
 	 * Stop all threads
 	 */
 	public synchronized void stop() {
-		if (mConnectThread != null) {mConnectThread.cancel(); mConnectThread = null;}
+		if (mConnectThread != null) {mConnectThread = null;}
 		if (mConnectedThread != null) {mConnectedThread.cancel(); mConnectedThread = null;}
 		setState(STATE_NONE);
 	}
@@ -88,8 +91,7 @@ public class WifiChatService{
 	 * 连接上wifi小车，启动监听通信线程
 	 **/
 	public synchronized void connected(Socket socket) {
-		if (mConnectThread != null) {mConnectThread.cancel(); mConnectThread = null;}
-		if (mConnectedThread != null) {mConnectedThread.cancel(); mConnectedThread = null;}
+		if (mConnectedThread != null) {mConnectedThread.interrupt(); mConnectedThread = null;}
 		mConnectedThread = new ConnectedThread(socket);
 		mConnectedThread.start();
 		connectionSuccess();
@@ -131,14 +133,12 @@ public class WifiChatService{
 	 **/
 	private class ConnectThread extends Thread {
 
-		private Socket mSocket = null;
-
 		@Override
 		public void run() {
 			try {
 				mSocket = new Socket();
-				SocketAddress socketAddress = new InetSocketAddress(Constant.IP,
-						Constant.PORT);// IP和端口号
+				SocketAddress socketAddress = new InetSocketAddress(PreferenceUtil.getInstance().getIP(),
+						PreferenceUtil.getInstance().getPort());// IP和端口号
 				//阻塞等待连接
 				mSocket.connect(socketAddress, Constant.TIMEOUT);
 			} catch (IOException e) {
@@ -152,23 +152,9 @@ public class WifiChatService{
 				return;
 			}
 
-			synchronized (WifiChatService.this) {
-				mConnectThread = null;
-			}
-
 			//启动连接成功线程监听通信过程
 			connected(mSocket);
 		}
-
-		public void cancel(){
-			try {
-				if(mSocket != null)
-					mSocket.close();
-			} catch (IOException e) {
-				Log.e(TAG, "close() of connect socket failed", e);
-			}
-		}
-
 	}
 
 	/**
@@ -176,16 +162,13 @@ public class WifiChatService{
 	 **/
 	private class ConnectedThread extends Thread {
 
-		private final Socket mmSocket;
 		private final InputStream mmInStream;
 		private final OutputStream mmOutStream;
 
 		public ConnectedThread(Socket socket){
-			mmSocket = socket;
 			InputStream tmpIn = null;
 			OutputStream tmpOut = null;
 
-			// Get the BluetoothSocket input and output streams
 			try {
 				tmpIn = socket.getInputStream();
 				tmpOut = socket.getOutputStream();
@@ -200,7 +183,7 @@ public class WifiChatService{
 		public void run() {
 			byte[] buffer = new byte[1024];
 			int bytes;
-			while (true) {
+			while (!this.isInterrupted()) {
 				try {
 					// 读取输入流
 					bytes = mmInStream.read(buffer);
@@ -216,6 +199,10 @@ public class WifiChatService{
 			}
 		}
 
+		public void cancel(){
+			interrupt();
+		}
+
 		/**
 		 * Write to the connected OutStream.
 		 * @param buffer  The bytes to write
@@ -223,18 +210,9 @@ public class WifiChatService{
 		public void write(byte[] buffer) {
 			try {
 				mmOutStream.write(buffer);
-				// Share the sent message back to the UI Activity
 				EventBus.getDefault().post(new RefreshEvent(new String(buffer)));
 			} catch (IOException e) {
 				Log.e(TAG, "Exception during write", e);
-			}
-		}
-
-		public void cancel() {
-			try {
-				mmSocket.close();
-			} catch (IOException e) {
-				Log.e(TAG, "close() of connect socket failed", e);
 			}
 		}
 	}

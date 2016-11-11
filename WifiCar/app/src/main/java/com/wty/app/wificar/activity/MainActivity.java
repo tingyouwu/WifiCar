@@ -3,14 +3,26 @@ package com.wty.app.wificar.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.wty.app.wificar.R;
+import com.wty.app.wificar.base.Constant;
+import com.wty.app.wificar.event.RefreshEvent;
 import com.wty.app.wificar.util.PreferenceUtil;
+import com.wty.app.wificar.wifi.WifiChatService;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 
+/**
+ * @Desc 小车控制页面
+ **/
 public class MainActivity extends AppCompatActivity {
 
     private ImageButton btngo,btnstop,btnleft,btnright,btnback;
@@ -28,11 +40,32 @@ public class MainActivity extends AppCompatActivity {
         btnback = (ImageButton) findViewById(R.id.btnback);
         tv_setting = (TextView) findViewById(R.id.tv_setting);
         initListener();
+        EventBus.getDefault().register(this);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Subscribe
+    public void onEventMainThread(RefreshEvent event){
+        Log.d("wutingyou:",event.getMsg());
+        if(event.getMsg().equals(Constant.Connect_Lost)){
+            //提示连接失败
+            this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this,"wifi小车已经断开，请检查!",Toast.LENGTH_SHORT).show();
+                }
+            });
+            Intent serverIntent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(serverIntent);
+            finish();
+        }else if(event.getMsg().equals(Constant.Connect_Success)){
+
+        }
     }
 
     /**
@@ -134,8 +167,16 @@ public class MainActivity extends AppCompatActivity {
      * @param message A string of text to send.
      */
     private void sendMessage(String message) {
+        if (WifiChatService.getInstance().getState() != WifiChatService.STATE_CONNECTED) {
+            Toast.makeText(this, "尚未连接到WIFI小车,请先连接!", Toast.LENGTH_SHORT).show();
+            Intent serverIntent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(serverIntent);
+            finish();
+            return;
+        }
+
         if(message.length()>0){
-            byte[] send = message.getBytes();
+            WifiChatService.getInstance().write(message.getBytes());
         }
     }
 }

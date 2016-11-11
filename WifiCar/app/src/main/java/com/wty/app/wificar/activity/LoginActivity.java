@@ -1,11 +1,13 @@
 package com.wty.app.wificar.activity;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.wty.app.wificar.R;
@@ -21,17 +23,33 @@ public class LoginActivity extends AppCompatActivity {
 
     Button btn_connect;
     ProgressDialog progressDialog;
+    ImageButton imageButton_setting;
+
+    public static void startLoginActivity(){
+        
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         btn_connect = (Button) findViewById(R.id.btn_connect);
+        imageButton_setting = (ImageButton) findViewById(R.id.settings);
         btn_connect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showProgressDialog();
-                WifiChatService.getInstance().start();
+//                showProgressDialog();
+//                WifiChatService.getInstance().start();
+                Intent serverIntent = new Intent(LoginActivity.this, MainActivity.class);
+                startActivity(serverIntent);
+                finish();
+            }
+        });
+        imageButton_setting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent serverIntent = new Intent(LoginActivity.this, NetWorkSetttingActivity.class);
+                startActivity(serverIntent);
             }
         });
         EventBus.getDefault().register(this);
@@ -64,6 +82,7 @@ public class LoginActivity extends AppCompatActivity {
                     progressDialog.dismiss();
                     Toast.makeText(LoginActivity.this,"连接上wifi小车",Toast.LENGTH_SHORT).show();
                     WifiChatService.getInstance().write("1".getBytes());
+                    finish();
                 }
             });
         }
