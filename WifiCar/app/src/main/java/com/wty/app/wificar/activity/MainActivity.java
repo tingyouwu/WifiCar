@@ -3,6 +3,7 @@ package com.wty.app.wificar.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -66,11 +67,8 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this,"wifi小车已经断开，请检查!",Toast.LENGTH_SHORT).show();
                 }
             });
-            Intent serverIntent = new Intent(MainActivity.this, LoginActivity.class);
-            startActivity(serverIntent);
+            LoginActivity.startLoginActivity(MainActivity.this);
             finish();
-        }else if(event.getMsg().equals(Constant.Connect_Success)){
-
         }
     }
 
@@ -89,7 +87,12 @@ public class MainActivity extends AppCompatActivity {
 
                     case MotionEvent.ACTION_UP:
                         btngo.setBackgroundResource(R.mipmap.up);
-                        sendMessage(PreferenceUtil.getInstance().getStopCode());
+                        new Handler().postDelayed(new Runnable(){
+                            @Override
+                            public void run() {
+                                sendMessage(PreferenceUtil.getInstance().getStopCode());
+                            }
+                        }, 500);
                         break;
                 }
                 return false;
@@ -107,7 +110,12 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case MotionEvent.ACTION_UP:
                         btnleft.setBackgroundResource(R.mipmap.left);
-                        sendMessage(PreferenceUtil.getInstance().getStopCode());
+                        new Handler().postDelayed(new Runnable(){
+                            @Override
+                            public void run() {
+                                sendMessage(PreferenceUtil.getInstance().getStopCode());
+                            }
+                        }, 500);
                         break;
                 }
                 return false;
@@ -126,7 +134,12 @@ public class MainActivity extends AppCompatActivity {
 
                     case MotionEvent.ACTION_UP:
                         btnright.setBackgroundResource(R.mipmap.right);
-                        sendMessage(PreferenceUtil.getInstance().getStopCode());
+                        new Handler().postDelayed(new Runnable(){
+                            @Override
+                            public void run() {
+                                sendMessage(PreferenceUtil.getInstance().getStopCode());
+                            }
+                        }, 500);
                         break;
                 }
                 return false;
@@ -145,7 +158,12 @@ public class MainActivity extends AppCompatActivity {
 
                     case MotionEvent.ACTION_UP:
                         btnback.setBackgroundResource(R.mipmap.back);
-                        sendMessage(PreferenceUtil.getInstance().getStopCode());
+                        new Handler().postDelayed(new Runnable(){
+                            @Override
+                            public void run() {
+                                sendMessage(PreferenceUtil.getInstance().getStopCode());
+                            }
+                        }, 500);
                         break;
                 }
                 return false;

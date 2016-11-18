@@ -40,18 +40,14 @@ public class LoginActivity extends AppCompatActivity {
         btn_connect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                showProgressDialog();
-//                WifiChatService.getInstance().start();
-                Intent serverIntent = new Intent(LoginActivity.this, MainActivity.class);
-                startActivity(serverIntent);
-                finish();
+                showProgressDialog();
+                WifiChatService.getInstance().start();
             }
         });
         imageButton_setting.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent serverIntent = new Intent(LoginActivity.this, NetWorkSetttingActivity.class);
-                startActivity(serverIntent);
+                NetWorkSetttingActivity.startNetWorkSetttingActivity(LoginActivity.this);
             }
         });
         EventBus.getDefault().register(this);
@@ -83,7 +79,7 @@ public class LoginActivity extends AppCompatActivity {
                 public void run() {
                     progressDialog.dismiss();
                     Toast.makeText(LoginActivity.this,"连接上wifi小车",Toast.LENGTH_SHORT).show();
-                    WifiChatService.getInstance().write("1".getBytes());
+                    MainActivity.startMainActivity(LoginActivity.this);
                     finish();
                 }
             });
