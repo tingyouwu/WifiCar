@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
+        WifiChatService.getInstance().stop();
     }
 
     public static void startMainActivity(Context context){

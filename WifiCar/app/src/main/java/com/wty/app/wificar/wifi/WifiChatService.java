@@ -60,6 +60,12 @@ public class WifiChatService{
 	public synchronized void stop() {
 		if (mConnectThread != null) {mConnectThread = null;}
 		if (mConnectedThread != null) {mConnectedThread.cancel(); mConnectedThread = null;}
+		try {
+			if (mSocket != null)
+				mSocket.close();
+		} catch (IOException e1) {
+			Log.e(TAG, "unable to close() socket during connection failure", e1);
+		}
 		setState(STATE_NONE);
 	}
 
@@ -187,7 +193,6 @@ public class WifiChatService{
 				try {
 					// 读取输入流
 					bytes = mmInStream.read(buffer);
-					Log.d(TAG, "wutingyou 收到数据");
 					if(bytes>0){
 						EventBus.getDefault().post(new RefreshEvent(new String(buffer,0,bytes)));
 					}
