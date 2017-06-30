@@ -16,6 +16,8 @@ import com.wty.app.wificar.R;
 import com.wty.app.wificar.base.Constant;
 import com.wty.app.wificar.event.RefreshEvent;
 import com.wty.app.wificar.util.PreferenceUtil;
+import com.wty.app.wificar.util.SimpleTask;
+import com.wty.app.wificar.util.TaskManager;
 import com.wty.app.wificar.wifi.WifiChatService;
 
 import org.greenrobot.eventbus.EventBus;
@@ -50,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
         WifiChatService.getInstance().stop();
+        TaskManager.getInstance().shutdown();
     }
 
     public static void startMainActivity(Context context){
@@ -191,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
      * Sends a message.
      * @param message A string of text to send.
      */
-    private void sendMessage(String message) {
+    private void sendMessage(final String message) {
         if (WifiChatService.getInstance().getState() != WifiChatService.STATE_CONNECTED) {
             Toast.makeText(this, "尚未连接到WIFI小车,请先连接!", Toast.LENGTH_SHORT).show();
             Intent serverIntent = new Intent(MainActivity.this, LoginActivity.class);
@@ -201,7 +204,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if(message.length()>0){
-            WifiChatService.getInstance().write(message.getBytes());
+            new SimpleTask(){
+                @Override
+                protected Object doInBackground(String... params) {
+                    WifiChatService.getInstance().write(message.getBytes());
+                    return super.doInBackground(params);
+                }
+            }.startTask();
+
         }
     }
 }

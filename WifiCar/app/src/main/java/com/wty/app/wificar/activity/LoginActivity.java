@@ -14,6 +14,7 @@ import android.widget.Toast;
 import com.wty.app.wificar.R;
 import com.wty.app.wificar.base.Constant;
 import com.wty.app.wificar.event.RefreshEvent;
+import com.wty.app.wificar.util.TaskManager;
 import com.wty.app.wificar.wifi.WifiChatService;
 
 import org.greenrobot.eventbus.EventBus;
@@ -57,6 +58,7 @@ public class LoginActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
+        TaskManager.getInstance().shutdown();
     }
 
     @Subscribe
@@ -67,7 +69,8 @@ public class LoginActivity extends AppCompatActivity {
             this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    progressDialog.dismiss();
+                    if(progressDialog != null && progressDialog.isShowing())
+                        progressDialog.dismiss();
                     Toast.makeText(LoginActivity.this,"无法连接上wifi小车，请检查!",Toast.LENGTH_SHORT).show();
                 }
             });
@@ -77,7 +80,8 @@ public class LoginActivity extends AppCompatActivity {
             this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    progressDialog.dismiss();
+                    if(progressDialog != null && progressDialog.isShowing())
+                        progressDialog.dismiss();
                     Toast.makeText(LoginActivity.this,"连接上wifi小车",Toast.LENGTH_SHORT).show();
                     MainActivity.startMainActivity(LoginActivity.this);
                     finish();
